@@ -17,7 +17,7 @@ Arduboy2 arduboy;
 
 
 //all of my variables
-uint8_t mapx = 0;
+uint16_t mapx = 0;
 int mapy = -32;
 int screenx = 0;
 uint8_t screeny = 0;
@@ -140,11 +140,11 @@ void buildGround()
     }
 }
 
-void buildGaps(uint8_t spacePosition, uint8_t spaceWidth)
+void buildGaps(uint8_t xSpot, uint8_t gapWidth)
 {
-  if(mapx >= spacePosition-1)
+  if(mapx >= xSpot-1)
   {
-    if(mapx - spacePosition + 1 < spaceWidth)
+    if(mapx - xSpot + 1 < gapWidth)
     {
       if(pgm_read_byte(&levelInfo[level].tallFloor) == true)
       {
@@ -182,7 +182,10 @@ void buildStairs(uint8_t xSpot, uint8_t faceRightBlockWidthBlockType)
           world[10 - j][16] = faceRightBlockWidthBlockType%10;
         }
       }
+      //return;
     }
+
+    
     else if(faceRightBlockWidthBlockType/100 == 2)
     {
       if(mapx >= xSpot-1)
@@ -197,9 +200,12 @@ void buildStairs(uint8_t xSpot, uint8_t faceRightBlockWidthBlockType)
         }
       }
     }
+    //return;
   }
 
   //this can be cleaned up a lot...this if statement used to be an else if inside of the above for loop
+  
+  /*
   if(faceRightBlockWidthBlockType/100 == 1)
   {
     if(z==3+faceRightBlockWidthBlockType/10%10+1)
@@ -220,52 +226,50 @@ void buildStairs(uint8_t xSpot, uint8_t faceRightBlockWidthBlockType)
       }
     }
   }
+*/
+  
 }
 
 void buildBlock(uint8_t xSpot, uint8_t blockTypeySpot, bool extraHeight)
+//builds a single block.
 {
 
   
   //builds a square section of blocks out of x,y,w,h,and type
   if(mapx == xSpot-1)
   {
-
-
-    
-/*
-    if(xSpot<16)
-    {
-      world[4-blockTypeySpot%10][xSpot] = (blockTypeySpot/10)-10;
-
-    }
-    else
-    {
-    */
       if(extraHeight == true)
       {
           world[4-blockTypeySpot%10][16] = blockTypeySpot/10;
+          //return;
       }
       else
       {
         world[12-blockTypeySpot%10][16] = blockTypeySpot/10;
+        //return;
       }
   }
-  
+
+  /*
   else if(mapx == xSpot)
   {
     if(extraHeight == true)
     {
+      //return;
       world[4-blockTypeySpot%10][16] = sky;
 
     }
     else
     {
+      //return;
       world[12-blockTypeySpot%10][16] = sky;
     }
   }
+  */
+  
 }
 
-void buildBlocks(uint8_t xSpot, uint8_t ySpotBlockHeight, uint8_t blockWidth, uint8_t extraHeightBlockType)
+void buildRects(uint8_t xSpot, uint8_t ySpotBlockHeight, uint8_t blockWidth, uint8_t extraHeightBlockType)
 {  
   uint8_t maths = ySpotBlockHeight%10;
   //uint8_t blockTypeMaths = extraHeightBlockType;
@@ -285,12 +289,17 @@ void buildBlocks(uint8_t xSpot, uint8_t ySpotBlockHeight, uint8_t blockWidth, ui
       {  
         if(mapx< xSpot -1 + blockWidth)
         {
-          world[13-(ySpotBlockHeight/10-10 + i)][16] = extraHeightBlockType%100;
+          world[13-(ySpotBlockHeight/10 + i)][16] = extraHeightBlockType%100;
         }
+
+        /*
         else if(mapx == xSpot -1 + blockWidth)
         {
-          world[13-(ySpotBlockHeight/10-10 + i)][16] = sky;
+          return;
+          //world[13-(ySpotBlockHeight/10-10 + i)][16] = sky;
         }
+        */
+        
       }
     }
   }
@@ -298,6 +307,10 @@ void buildBlocks(uint8_t xSpot, uint8_t ySpotBlockHeight, uint8_t blockWidth, ui
 
 void buildRow(uint8_t xSpot, uint8_t xWidth, uint8_t blockTypeySpot, bool extraHeight)
 {
+  //bool stopReturn = false;
+  
+  
+  
   //builds a horizontal row of blocks
   if(mapx >= xSpot-1)
   {
@@ -312,17 +325,52 @@ void buildRow(uint8_t xSpot, uint8_t xWidth, uint8_t blockTypeySpot, bool extraH
         world[12-blockTypeySpot%10][16] = blockTypeySpot/10;
       }
     }
+
+
+    /*
     else if(mapx - xSpot + 1 == xWidth)
     {
+    /*
+      if(world[4-blockTypeySpot%10][16] != sky)
+  {
+    return;
+    }
+
+    if(world[12-blockTypeySpot%10][16] != sky)
+  {
+    return;
+    }
+*/
+/*
       if(extraHeight == true)
       {
-        world[4-blockTypeySpot%10][16] = sky;
+        
+        if(world[4-blockTypeySpot%10][16] == sky)
+        {
+          world[4-blockTypeySpot%10][16] = sky;
+        }
+        else
+        {
+          return;
+        }
+        
+        //world[4-blockTypeySpot%10][16] = sky;
       }
       else
       {
-        world[12-blockTypeySpot%10][16] = sky;
+        if(world[12-blockTypeySpot%10][16] == sky)
+        {
+          world[12-blockTypeySpot%10][16] = sky;
+        }
+        else
+        {
+          return;
+        }
+        //world[12-blockTypeySpot%10][16] = sky;
       }
+      
     }
+    */
   }
 }
 
@@ -331,28 +379,33 @@ void buildColumn(uint8_t xSpot, uint8_t yHeightySpot, uint8_t blockType)
   //builds a vertical column
   if(mapx == xSpot-1)
   {
-    for(uint8_t i = 0; i < (yHeightySpot/10)-10; i++)
+    for(uint8_t i = 0; i < yHeightySpot/10; i++)
     {
       world[12-(i+yHeightySpot%10)][16] = blockType;
       
     }
+    
   }
 
+
+  /*
   //makes white
   else if(mapx == xSpot)
   {
-    for(uint8_t i = 0; i < (yHeightySpot/10)-10; i++)
+    for(uint8_t i = 0; i < yHeightySpot/10; i++)
     {
       world[12-(i+yHeightySpot%10)][16] = sky;
     }     
   }
+
+  */
 }
 
 
 //What happens every time a level is loaded
 void newLevel()
 {
-
+  
   //arduboy.clear;
   sky = pgm_read_byte(&levelInfo[level].themeInfo)/10%10;
   levelTimer = 250;
@@ -365,6 +418,8 @@ void newLevel()
   {
     tempScanner[x] = 0;
   }
+
+
 
 /*
   for(uint8_t moveShift = 0; moveShift < 144; moveShift++)
@@ -385,7 +440,7 @@ void newLevel()
 void endLevel()
 {
   buildBlock(pgm_read_byte(&levelInfo[level].endSpot),62, false);
-  buildBlocks(pgm_read_byte(&levelInfo[level].endSpot)+4,123,5,7);
+  buildRects(pgm_read_byte(&levelInfo[level].endSpot)+4,123,5,7);
   buildBlock(pgm_read_byte(&levelInfo[level].endSpot)+6,22, false);
 
   //buildRow(levelInfo[level][1]+4,2,125);
@@ -401,7 +456,7 @@ void endLevel()
 //makes pipes, kinda messy...
 void buildPipe(uint8_t xSpot, uint8_t pipeHeightySpot)
 {  
-  uint8_t tempHeight = pipeHeightySpot/10-10;
+  uint8_t tempHeight = pipeHeightySpot/10;
   uint8_t tempySpot = (pipeHeightySpot%10);
   if(mapx == xSpot - 1)
   {
@@ -420,6 +475,8 @@ void buildPipe(uint8_t xSpot, uint8_t pipeHeightySpot)
       world[11 - tempHeight-1 - tempySpot][16] = 18;
     }
   }
+
+  /*
   else if(mapx==xSpot + 1)
   {
     for(int i = 0; i < tempHeight + 1; i++)
@@ -428,6 +485,8 @@ void buildPipe(uint8_t xSpot, uint8_t pipeHeightySpot)
         world[11 - tempHeight-1 - tempySpot][16] = sky;
     }
   }
+  */
+  
 }
 
 //Most important thing, this piper function is in charge of:
@@ -454,23 +513,24 @@ void piper()
     }
     tempLoop = false;
   }
+
+
+  //clears the column before anything else can be put there
   
-  buildClouds();
-  buildGround();
-  
-  //gaps
-  for(uint8_t y = tempScanner[0] - pgm_read_byte(&objectList[level][0]); y<tempScanner[0];y++)
+  //CLEAR SEAM
+  for(uint8_t i = 0;i<12; i++)
   {
-    buildGaps(pgm_read_byte(&gapInfo[y].xSpot),pgm_read_byte(&gapInfo[y].gapWidth));
+    world[i][16] = sky;
   }
+  
+  
+  buildBG();
+  
+ 
+  
+  
 
   
-
-  //pipes
-  for(uint8_t y = tempScanner[1] - pgm_read_byte(&objectList[level][1]); y<tempScanner[1];y++)
-  {
-    buildPipe(pgm_read_byte(&pipeInfo[y].xSpot),pgm_read_byte(&pipeInfo[y].pipeHeightySpot));
-  }
 
   //stairs
   for(uint8_t y = tempScanner[5] - pgm_read_byte(&objectList[level][5]); y<tempScanner[5];y++)
@@ -478,10 +538,26 @@ void piper()
     buildStairs(pgm_read_byte(&stairInfo[y].xSpot),pgm_read_byte(&stairInfo[y].faceRightBlockWidthBlockType));
   }
 
+  //pipes
+  for(uint8_t y = tempScanner[1] - pgm_read_byte(&objectList[level][1]); y<tempScanner[1];y++)
+  {
+    buildPipe(pgm_read_byte(&pipeInfo[y].xSpot),pgm_read_byte(&pipeInfo[y].pipeHeightySpot));
+  }
+  
+  buildGround();
+  
+
+   //gaps
+  for(uint8_t y = tempScanner[0] - pgm_read_byte(&objectList[level][0]); y<tempScanner[0];y++)
+  {
+    buildGaps(pgm_read_byte(&gapInfo[y].xSpot),pgm_read_byte(&gapInfo[y].gapWidth));
+  }
+  
+
   //blocks
   for(uint8_t y = tempScanner[6] - pgm_read_byte(&objectList[level][6]); y<tempScanner[6];y++)
   {
-    buildBlocks(pgm_read_byte(&rectInfo[y].xSpot),pgm_read_byte(&rectInfo[y].ySpotBlockHeight),pgm_read_byte(&rectInfo[y].blockWidth),pgm_read_byte(&rectInfo[y].extraHeightBlockType));
+    buildRects(pgm_read_byte(&rectInfo[y].xSpot),pgm_read_byte(&rectInfo[y].ySpotBlockHeight),pgm_read_byte(&rectInfo[y].blockWidth),pgm_read_byte(&rectInfo[y].extraHeightBlockType));
   }
 
   //row
@@ -501,6 +577,27 @@ void piper()
   {
     buildBlock(pgm_read_byte(&blockInfo[y].xSpot),pgm_read_byte(&blockInfo[y].blockTypeySpot),pgm_read_byte(&blockInfo[y].extraHeight));
   }
+
+
+
+//yo make this consistent. use worldtime
+//MAKES GREY
+for(uint8_t i = 0; i < 17; i++)
+{
+  for(uint8_t j = 0; j < 12; j++)
+  {
+    if(world[j][i] == 0)
+  {
+    world[j][i] = 29;
+  }
+
+  else if(world[j][i] == 29)
+  {
+    world[j][i] = 0;
+  }
+  }
+}
+  
   
 }
 
@@ -678,6 +775,122 @@ void controls()
 }
 
 
+void testControls()
+{
+  if(arduboy.pressed(RIGHT_BUTTON))
+  {
+    if(canMove == true)
+    {
+      screenx+=4;
+      scrollLeft();
+    }
+  }
+  else
+  {
+    if(slowRunCountdown < 8)
+    {
+      slowRunCountdown++;
+    }
+  }
+
+  if(screeny == 8)
+  {
+    //mapy++;
+    //screeny = 0;
+  }
+
+  if(screenynegative == 0)
+  {
+    //mapy--;
+    //screeny = 8;
+  }
+
+   
+
+  if(arduboy.pressed(LEFT_BUTTON))
+  {
+    if(canMove == true)
+    {
+      if(playerx-screenx > 0)
+      {
+    //    playerx-=4;
+      }
+    }  
+  }
+
+  if(arduboy.justPressed(UP_BUTTON))
+  {
+    level++;
+    newLevel();
+
+    //resets from level 32 (31) to 1 (0)
+    if(level > 31)
+    {
+      level = 0;
+    }  
+  }
+
+  if(arduboy.justPressed(DOWN_BUTTON))
+  {
+    if(level == 0)
+    {
+      level = 32;
+    }
+    level--;
+    newLevel();
+  }
+
+  if(arduboy.pressed(B_BUTTON))
+  { 
+   
+      /*
+      if(screeny < 32)
+      {
+        mapy++;
+      }
+      */
+      if(mapy < 0)
+      {
+        mapy+=2;
+      }
+    
+    //playery -= 3;
+  }
+
+
+   
+
+  if(arduboy.pressed(A_BUTTON))
+  { 
+  /*
+    if(screeny > 0)
+    {
+     mapy--;
+    }
+    
+    if(mapy > -32)
+    {
+      mapy--;
+      }
+  
+      */
+
+      if(mapy > -32)
+      {
+        mapy-=2;
+      }
+
+      
+      //playery += 3;
+  }
+
+  if(arduboy.pressed(B_BUTTON))
+  { 
+    //screeny--;
+  }
+}
+
+
 void gravityCount()
 {
   if(plusJump<5)
@@ -690,6 +903,8 @@ void gravityCount()
   }
   playery += plusJump;
 }
+
+
 
 
 //makes the player collide with blocks, super bad right now
@@ -788,7 +1003,6 @@ void buildSky()
       }
     }
 
-  
   //Sprites::drawOverwrite(31, 21, cloudFull, 0);
   
 
@@ -796,23 +1010,60 @@ void buildSky()
 }
 
 
-void buildClouds()
+void buildBG()
 {
+  //for underwater levels, change to wave block
+  if(sky == 0)
+  {
+    for(uint8_t x = 0; x < 17; x++)
+    {
+      if(world[0][x] == 0)
+      {
+        world[0][x] = 26;
+      }
+      
+    }
+  }
+  
+  //for castles, add lava
+  //bro it just broke...
+  if(levelInfo[level-1].themeInfo%10 == 4)
+  {
+    for(uint8_t x = 0; x < 17; x++)
+    {
+      if(world[11][x] == 2)
+      {
+        world[10][x] = 26;
+      }
+      
+    }
+  }
+  
+  
+
+  uint8_t tempSpace = 0;
 
   //try to do every 5-10 frames
 
-  /*
-  if(mapx == 5)
+  
+  if(mapx %15 == 0)
   {
     world[5][16] = 22;
   world[4][16] = 24;
   }
-  if(mapx == 6)
+  if(mapx % 16 == 0)
   {
     world[5][16] = 23;
     world[4][16] = 25;
   }
-  */
+
+  if(mapx % 16 == 0)
+  {
+
+    world[5][16] = sky;
+    world[4][16] = sky;
+  }
+  
 }
 
 
@@ -845,7 +1096,7 @@ void graphics()
   //prints player
   Sprites::drawOverwrite(playerx-screenx,playery,playerBig,0);
 
-
+  
 
   arduboy.setCursor(0,0);
   arduboy.print("MAPx:");
@@ -866,7 +1117,7 @@ void graphics()
   arduboy.setCursor(12,20);
   arduboy.print(level);
 
-
+ 
 
   arduboy.setCursor(60,20);
   arduboy.print(screeny);
@@ -941,11 +1192,24 @@ void titleScreen()
 }
 
 
+void loading()
+{
+  if(mapx < 16)
+  {
+    screenx+=4;
+    scrollLeft();
+    playerx+=4;
+  }
+  
+}
+
 void gameplay()
 {
-  controls();
+  //controls();
+  testControls();
   //collision();
   graphics();
+  loading();
 }
 
 
